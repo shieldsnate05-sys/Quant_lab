@@ -37,6 +37,8 @@ ADX_PERIOD = 14
 
 # Stochastic Oscillator
 STOCH_PERIOD = 14
+STOCH_SMOOTH_K = 3
+STOCH_SMOOTH_D = 3
 
 # Bollinger Bands
 BBANDS_PERIOD = 20
@@ -46,6 +48,11 @@ BBANDS_STD = 2
 ICHIMOKU_TENKAN = 9
 ICHIMOKU_KIJUN = 26
 ICHIMOKU_SPAN_B = 52
+
+# Parabolic SAR
+PSAR_AF_START = 0.02
+PSAR_AF_INCREMENT = 0.02
+PSAR_AF_MAX = 0.2
 
 #: Tolerance used when comparing floating point values for equality.
 FLOAT_TOLERANCE = 1e-9

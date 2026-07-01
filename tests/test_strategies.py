@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from core.exceptions import StrategyError
-from indicators.trend import ema
+from indicators.trend import EMA
 from strategies.ema_cross import EMACrossStrategy
 
 
@@ -26,9 +26,8 @@ def test_generate_signals_matches_manual_crossover(
     strategy = EMACrossStrategy(fast_period=5, slow_period=20)
     signals = strategy.generate_signals(trending_ohlcv_frame)
 
-    close = trending_ohlcv_frame["close"]
-    fast = ema(close, 5)
-    slow = ema(close, 20)
+    fast = EMA(period=5).compute(trending_ohlcv_frame)
+    slow = EMA(period=20).compute(trending_ohlcv_frame)
     warmed_up = fast.notna() & slow.notna()
 
     expected = pd.Series(0, index=trending_ohlcv_frame.index, dtype="int64")

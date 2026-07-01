@@ -17,9 +17,8 @@ from config.logging_config import get_logger
 from core.constants import EMA_FAST, EMA_SLOW
 from core.exceptions import StrategyError
 from core.types import OHLCVFrame
-from data.schema import SCHEMA
 from data.validator import validate_ohlcv_frame
-from indicators.trend import ema
+from indicators.trend import EMA
 from strategies.base import Strategy
 
 logger = get_logger(__name__)
@@ -87,9 +86,8 @@ class EMACrossStrategy(Strategy):
                 f"slow_period {self.slow_period}."
             )
 
-        close = frame[SCHEMA.close]
-        fast_ema = ema(close, self.fast_period)
-        slow_ema = ema(close, self.slow_period)
+        fast_ema = EMA(period=self.fast_period).compute(frame)
+        slow_ema = EMA(period=self.slow_period).compute(frame)
 
         bullish = fast_ema > slow_ema
         bearish = fast_ema < slow_ema
