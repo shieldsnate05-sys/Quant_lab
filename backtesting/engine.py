@@ -30,7 +30,7 @@ from core.enums import PositionSide
 from core.exceptions import BacktestError
 from core.types import OHLCVFrame
 from data.schema import SCHEMA
-from data.validation import validate_ohlcv_frame
+from data.validator import validate_ohlcv_frame
 from strategies.base import Strategy
 
 logger = get_logger(__name__)

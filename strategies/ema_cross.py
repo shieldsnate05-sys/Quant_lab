@@ -18,7 +18,7 @@ from core.constants import EMA_FAST, EMA_SLOW
 from core.exceptions import StrategyError
 from core.types import OHLCVFrame
 from data.schema import SCHEMA
-from data.validation import validate_ohlcv_frame
+from data.validator import validate_ohlcv_frame
 from indicators.trend import ema
 from strategies.base import Strategy
 

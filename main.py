@@ -22,8 +22,8 @@ from config.logging_config import get_logger
 from config.settings import settings
 from core.enums import TimeFrame
 from core.exceptions import QuantLabError
-from data.alpaca_loader import AlpacaDataLoader
-from data.cached_loader import CachedDataLoader
+from data.downloader import AlpacaDownloader
+from data.loader import CachedDataLoader
 from strategies.ema_cross import EMACrossStrategy
 
 logger = get_logger(__name__)
@@ -90,7 +90,7 @@ def run(argv: list[str] | None = None) -> int:
     start = end - timedelta(days=args.lookback_days)
 
     try:
-        loader = CachedDataLoader(AlpacaDataLoader())
+        loader = CachedDataLoader(AlpacaDownloader())
         frame = loader.fetch_ohlcv(args.symbol, timeframe, start, end)
 
         strategy = EMACrossStrategy(allow_shorting=settings.backtest.allow_shorting)

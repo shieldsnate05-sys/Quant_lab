@@ -1,7 +1,7 @@
 """
-Quant-Lab Alpaca Data Loader.
+Quant-Lab Alpaca Downloader.
 
-Concrete :class:`~data.base.DataLoader` backed by the Alpaca Market
+Concrete :class:`~data.loader.DataLoader` backed by the Alpaca Market
 Data API (via ``alpaca-py``).
 """
 
@@ -22,7 +22,7 @@ from config.settings import AlpacaSettings, settings
 from core.enums import TimeFrame
 from core.exceptions import ConfigurationError, DataError
 from core.types import OHLCVFrame, Symbol
-from data.base import DataLoader
+from data.loader import DataLoader
 from data.schema import SCHEMA
 
 logger = get_logger(__name__)
@@ -45,7 +45,7 @@ _FEED_MAP: dict[str, DataFeed] = {
 }
 
 
-class AlpacaDataLoader(DataLoader):
+class AlpacaDownloader(DataLoader):
     """
     Fetches OHLCV bars from the Alpaca Market Data API.
 

@@ -1,4 +1,4 @@
-"""Tests for data.schema and data.validation."""
+"""Tests for data.schema and data.validator."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import pytest
 
 from core.exceptions import DataError
 from data.schema import SCHEMA
-from data.validation import validate_ohlcv_frame
+from data.validator import validate_ohlcv_frame
 
 
 def test_schema_columns() -> None:
@@ -72,3 +72,18 @@ def test_validate_ohlcv_frame_rejects_negative_volume(
     broken.loc[broken.index[0], SCHEMA.volume] = -1.0
     with pytest.raises(DataError, match="negative volume"):
         validate_ohlcv_frame(broken)
+
+
+def test_validate_ohlcv_frame_rejects_timezone_naive_index(
+    ohlcv_frame: pd.DataFrame,
+) -> None:
+    broken = ohlcv_frame.tz_localize(None)
+    with pytest.raises(DataError, match="timezone-aware"):
+        validate_ohlcv_frame(broken)
+
+
+def test_validate_ohlcv_frame_allows_timezone_naive_when_not_required(
+    ohlcv_frame: pd.DataFrame,
+) -> None:
+    naive = ohlcv_frame.tz_localize(None)
+    validate_ohlcv_frame(naive, require_tz_aware=False)  # should not raise

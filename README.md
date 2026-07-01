@@ -8,7 +8,7 @@ indicator/feature engineering, strategy development, and backtesting.
 ```
 config/        Centralized settings (config.settings) and filesystem paths (config.paths)
 core/          Shared exceptions, type aliases, enums, and constants used by every package
-data/          OHLCV data loading (Alpaca), Parquet caching, and schema validation
+data/          OHLCV data loading (Alpaca), Parquet caching/storage, validation, resampling, and sessions
 indicators/    Vectorized technical indicators (trend, momentum)
 features/      Feature engineering (planned)
 strategies/    Trading strategies implementing strategies.base.Strategy
@@ -49,7 +49,7 @@ Run the EMA crossover strategy against a symbol's daily bars:
 python main.py --symbol QQQ --timeframe 1Day --lookback-days 365
 ```
 
-This fetches OHLCV bars via `data.AlpacaDataLoader` (cached to Parquet under
+This fetches OHLCV bars via `data.AlpacaDownloader` (cached to Parquet under
 `data/parquet/` by `data.CachedDataLoader`), runs
 `strategies.EMACrossStrategy` through `backtesting.BacktestEngine`, and
 prints a performance summary (total return, CAGR, Sharpe ratio, max

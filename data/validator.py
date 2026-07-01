@@ -1,5 +1,5 @@
 """
-Quant-Lab OHLCV Validation.
+Quant-Lab OHLCV Validator.
 
 Structural and sanity validation for OHLCV market data frames. Shared
 by every package that consumes market data (``indicators``,
@@ -11,9 +11,12 @@ from __future__ import annotations
 
 import pandas as pd
 
+from config.logging_config import get_logger
 from core.exceptions import DataError
 from core.types import OHLCVFrame
 from data.schema import SCHEMA, OHLCVSchema
+
+logger = get_logger(__name__)
 
 
 def validate_ohlcv_frame(
@@ -21,6 +24,7 @@ def validate_ohlcv_frame(
     *,
     schema: OHLCVSchema = SCHEMA,
     allow_empty: bool = False,
+    require_tz_aware: bool = True,
 ) -> None:
     """
     Validate that ``frame`` is a well-formed OHLCV market data frame.
@@ -35,18 +39,23 @@ def validate_ohlcv_frame(
     allow_empty : bool, optional
         If ``False`` (the default), an empty frame raises
         :class:`~core.exceptions.DataError`.
+    require_tz_aware : bool, optional
+        If ``True`` (the default), the index must be timezone-aware.
+        Timezone-naive timestamps are ambiguous across market sessions
+        and are rejected by :mod:`data.sessions`.
 
     Raises
     ------
     core.exceptions.DataError
-        If ``frame`` is missing required columns, has a non-datetime or
-        non-monotonic index, contains duplicate timestamps, contains
-        null values in required columns, or contains rows that violate
-        OHLC price-ordering invariants (``low <= open, close <= high``)
-        or negative volume.
+        If ``frame`` is missing required columns, has a non-datetime,
+        timezone-naive, or non-monotonic index, contains duplicate
+        timestamps, contains null values in required columns, or
+        contains rows that violate OHLC price-ordering invariants
+        (``low <= open, close <= high``) or negative volume.
     """
     if frame.empty:
         if allow_empty:
+            logger.debug("OHLCV frame is empty; allowed by allow_empty=True.")
             return
         raise DataError("OHLCV frame is empty.")
 
@@ -58,6 +67,9 @@ def validate_ohlcv_frame(
 
     if not isinstance(frame.index, pd.DatetimeIndex):
         raise DataError("OHLCV frame must be indexed by a DatetimeIndex.")
+
+    if require_tz_aware and frame.index.tz is None:
+        raise DataError("OHLCV frame index must be timezone-aware.")
 
     if not frame.index.is_monotonic_increasing:
         raise DataError("OHLCV frame index must be sorted in ascending order.")
@@ -84,3 +96,5 @@ def validate_ohlcv_frame(
 
     if (frame[schema.volume] < 0).any():
         raise DataError("OHLCV frame contains negative volume.")
+
+    logger.debug("OHLCV frame passed validation: %d rows.", len(frame))

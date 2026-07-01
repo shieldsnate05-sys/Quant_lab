@@ -1,4 +1,4 @@
-"""Tests for data.cache.ParquetCache and data.cached_loader.CachedDataLoader."""
+"""Tests for data.cache.ParquetCache and data.loader.CachedDataLoader."""
 
 from __future__ import annotations
 
@@ -9,19 +9,23 @@ import pandas as pd
 
 from core.enums import TimeFrame
 from core.types import OHLCVFrame, Symbol
-from data.base import DataLoader
 from data.cache import ParquetCache
-from data.cached_loader import CachedDataLoader
+from data.loader import CachedDataLoader, DataLoader
+from data.storage import ParquetStorage
+
+
+def _cache(tmp_path: Path) -> ParquetCache:
+    return ParquetCache(storage=ParquetStorage(base_dir=tmp_path))
 
 
 def test_cache_returns_none_on_miss(tmp_path: Path) -> None:
-    cache = ParquetCache(cache_dir=tmp_path)
+    cache = _cache(tmp_path)
     assert cache.read("QQQ", TimeFrame.DAILY) is None
 
 
 def test_cache_round_trip(tmp_path: Path, ohlcv_frame: pd.DataFrame) -> None:
-    cache = ParquetCache(cache_dir=tmp_path)
-    cache.write("QQQ", TimeFrame.DAILY, ohlcv_frame)
+    cache = _cache(tmp_path)
+    cache.write("QQQ", TimeFrame.DAILY, ohlcv_frame, source="test")
 
     loaded = cache.read("QQQ", TimeFrame.DAILY)
 
@@ -30,6 +34,26 @@ def test_cache_round_trip(tmp_path: Path, ohlcv_frame: pd.DataFrame) -> None:
     pd.testing.assert_frame_equal(
         loaded, ohlcv_frame[list(loaded.columns)], check_freq=False
     )
+
+
+def test_cache_write_records_metadata(
+    tmp_path: Path, ohlcv_frame: pd.DataFrame
+) -> None:
+    cache = _cache(tmp_path)
+    cache.write("QQQ", TimeFrame.DAILY, ohlcv_frame, source="test")
+
+    metadata = cache.read_metadata("QQQ", TimeFrame.DAILY)
+
+    assert metadata is not None
+    assert metadata.symbol == "QQQ"
+    assert metadata.timeframe is TimeFrame.DAILY
+    assert metadata.row_count == len(ohlcv_frame)
+    assert metadata.source == "test"
+
+
+def test_cache_read_metadata_returns_none_on_miss(tmp_path: Path) -> None:
+    cache = _cache(tmp_path)
+    assert cache.read_metadata("QQQ", TimeFrame.DAILY) is None
 
 
 class _StubLoader(DataLoader):
@@ -54,7 +78,7 @@ def test_cached_loader_serves_second_request_from_cache(
     tmp_path: Path, ohlcv_frame: pd.DataFrame
 ) -> None:
     stub = _StubLoader(ohlcv_frame)
-    cached_loader = CachedDataLoader(stub, cache=ParquetCache(cache_dir=tmp_path))
+    cached_loader = CachedDataLoader(stub, cache=_cache(tmp_path))
 
     start = ohlcv_frame.index.min()
     end = ohlcv_frame.index.max()
@@ -70,7 +94,7 @@ def test_cached_loader_refetches_when_range_not_covered(
     tmp_path: Path, ohlcv_frame: pd.DataFrame
 ) -> None:
     stub = _StubLoader(ohlcv_frame)
-    cached_loader = CachedDataLoader(stub, cache=ParquetCache(cache_dir=tmp_path))
+    cached_loader = CachedDataLoader(stub, cache=_cache(tmp_path))
 
     start = ohlcv_frame.index.min()
     end = ohlcv_frame.index.max()
