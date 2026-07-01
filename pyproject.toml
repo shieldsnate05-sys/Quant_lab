@@ -20,6 +20,8 @@ dependencies = [
     "xgboost>=2.0",
     "scipy>=1.12",
     "statsmodels>=0.14",
+    "shap>=0.45",
+    "joblib>=1.4",
 ]
 
 [project.optional-dependencies]
@@ -76,6 +78,12 @@ src = [
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
 ignore = []
 
+[tool.ruff.lint.per-file-ignores]
+# X/y are the universal scikit-learn convention for feature matrix /
+# target vector (used by sklearn itself), not a naming mistake.
+"ml/*.py" = ["N803", "N806"]
+"tests/test_ml_*.py" = ["N803", "N806"]
+
 [tool.ruff.lint.isort]
 known-first-party = [
     "config",
@@ -100,7 +108,7 @@ warn_return_any = true
 disallow_untyped_defs = true
 
 [[tool.mypy.overrides]]
-module = ["alpaca.*", "xgboost.*"]
+module = ["alpaca.*", "xgboost.*", "shap.*", "sklearn.*", "joblib.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

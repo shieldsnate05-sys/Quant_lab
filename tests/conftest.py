@@ -7,6 +7,13 @@ import pandas as pd
 import pytest
 
 from data.schema import SCHEMA
+from ml.dataset import (
+    ChronologicalSplit,
+    Dataset,
+    build_dataset,
+    make_forward_return_labels,
+    train_validation_test_split,
+)
 
 
 def make_ohlcv_frame(
@@ -51,3 +58,42 @@ def ohlcv_frame() -> pd.DataFrame:
 def trending_ohlcv_frame() -> pd.DataFrame:
     """A short, strongly trending synthetic OHLCV frame."""
     return make_ohlcv_frame(n=120, trend=0.004, seed=11)
+
+
+def make_ml_features(frame: pd.DataFrame) -> pd.DataFrame:
+    """Build a small, deterministic feature frame from OHLCV bars, for ML tests."""
+    close = frame[SCHEMA.close]
+    features = pd.DataFrame(
+        {
+            "ret_1": close.pct_change(),
+            "ret_5": close.pct_change(5),
+            "vol_10": close.pct_change().rolling(10).std(),
+        },
+        index=frame.index,
+    )
+    features.index.name = SCHEMA.timestamp
+    return features
+
+
+@pytest.fixture
+def ml_features(ohlcv_frame: pd.DataFrame) -> pd.DataFrame:
+    """A small, deterministic feature frame aligned to `ohlcv_frame`."""
+    return make_ml_features(ohlcv_frame)
+
+
+@pytest.fixture
+def ml_labels(ohlcv_frame: pd.DataFrame) -> pd.Series:
+    """Forward-return classification labels aligned to `ohlcv_frame`."""
+    return make_forward_return_labels(ohlcv_frame, horizon=1, threshold=0.0)
+
+
+@pytest.fixture
+def ml_dataset(ml_features: pd.DataFrame, ml_labels: pd.Series) -> Dataset:
+    """A `ml.dataset.Dataset` built from `ml_features`/`ml_labels`, NaNs dropped."""
+    return build_dataset(ml_features, ml_labels)
+
+
+@pytest.fixture
+def ml_split(ml_dataset: Dataset) -> ChronologicalSplit:
+    """A chronological train/validation/test split of `ml_dataset`."""
+    return train_validation_test_split(ml_dataset)
