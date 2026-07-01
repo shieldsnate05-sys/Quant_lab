@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment / secrets
+.env
+.env.*
+
+# Testing / coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Quant-Lab generated data and artifacts
+logs/*.log*
+data/raw/*
+data/processed/*
+data/cache/*
+data/parquet/*
+data/exports/*
+features/cache/*
+backtesting/results/*
+backtesting/trades/*
+optimization/results/*
+ml/models/*
+ml/predictions/*
+reports/html/*
+reports/pdf/*
+visualization/figures/*
+visualization/charts/*
+temp/*
+!**/.gitkeep
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,13 @@
+# Runtime dependencies. Install with: pip install -r requirements.txt
+# For development (tests, linting, type checking) also install:
+#   pip install -e ".[dev]"
+pandas>=2.2
+numpy>=1.26
+pyarrow>=15.0
+alpaca-py>=0.43
+matplotlib>=3.8
+plotly>=5.20
+scikit-learn>=1.4
+xgboost>=2.0
+scipy>=1.12
+statsmodels>=0.14
